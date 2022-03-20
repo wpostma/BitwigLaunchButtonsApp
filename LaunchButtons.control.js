@@ -13,7 +13,7 @@ var MUSICAL_STOP_STATE = 0;
 var MasterTrackVolume = 1.0;
  
 var dancing_leds = false;
-
+var polledFunctionCounter = 0;
 
 // New velocity setup, has a set number for low and high, and you use the two middle buttons to index the rest of the velocities.velocity setup is in Launchpad_Step_Sequencer.js
 var velocities2 = [];
@@ -196,6 +196,20 @@ function getGridObserverFunc2(track, varToStore)
       if (trace>0){
       println("scene:"+scene+" track:"+track+" play:"+value);
       }
+      var i = scene*8 + track; 
+      if (varToStore[i] != value) { 
+         varToStore[i] = value;
+         //polledFunction(); 
+      }
+   }
+}
+function getGridObserverFunc3(track, varToStore)
+{
+   return function(scene, value)
+   {
+      if (trace>0){
+      println("scene:"+scene+" track:"+track+"  content:"+value);
+      }
       varToStore[scene*8 + track] = value;
    }
 }
@@ -252,8 +266,10 @@ selectedName = [""]
 
 function getSelectedNameObserver() {
    return function( name ) {
-       println( "selected name: "+name );
-       selectedName[0] = name
+       if (trace>0) {
+          println( "getSelectedNameObserver name: "+name );
+       }
+       selectedName[0] = name;
    }
 }
 
@@ -323,7 +339,7 @@ function init()
 
       var clipLauncher = track.getClipLauncherSlots();
 
-		clipLauncher.addHasContentObserver(getGridObserverFunc(t, hasContent));
+		clipLauncher.addHasContentObserver(getGridObserverFunc3(t, hasContent));
 
 
       clipLauncher.addIsPlayingObserver(getGridObserverFunc2(t, isPlaying));
@@ -433,12 +449,19 @@ function init()
 
    println("init complete. on grid page. type trace=1 to output trace info.")
 
-   host.scheduleTask(polledFunction,  100);
+   clear();
+
+   host.scheduleTask(polledFunction,  10);
 }
 
 function polledFunction() {
-  flushLEDs();
- // println("polling");
+  
+  
+  polledFunctionCounter = polledFunctionCounter  +1;
+   if ((polledFunctionCounter%10) == 0) {
+      println("polling");
+   }
+   
  //println( "isRecording[0]="+isRecording[0] );
   timerState = timerState + 1;
   if (timerState > 3 ) {
@@ -456,6 +479,9 @@ function polledFunction() {
        setMasterVol(vol);
         
   }
+
+  flush();
+
 
 }
 
@@ -592,6 +618,10 @@ function onMidi(status, data1, data2)
 	printMidi(status, data1, data2);
    }
    var channel = MIDIChannel(status);
+   if (channel>5) {
+      println("ignoring channel "+channel);
+      return;
+   }
    
    if ((status>=CC_MSG)&&(status<=CC_MSG2))
    {  
@@ -833,7 +863,7 @@ function setAllPrimaryPadsTest()
    for(var i=0; i<LED_COUNT; i++)
    {
       pendingLEDs[i] = Colour.OFF; 
-      activeLEDs[i] = -1;
+      activeLEDs[i] = -2;
       
    }
  //  pendingLEDs[LEFT_PAD_LED(0)] = Colour.LIME_FULL;
@@ -957,7 +987,7 @@ function flushLEDs()
    if (changedCount == 0) return;
 
    
-   if (trace>2) {
+   if (trace>0) {
       println("flushLEDs active. changedCount "+changedCount);
    };
 

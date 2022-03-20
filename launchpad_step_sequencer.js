@@ -306,12 +306,12 @@ seqPage.onStepPlay = function(step)
 
 seqPage.onNotePlay = function(isOn, key, velocity)
 {
-   if (trace>1){
+   if (trace>4){
         if (isOn) {
-         println("onNotePlay key ON "+key);
+         println("seqPage.onNotePlay key ON "+key);
       }
       else {
-         println("onNotePlay key OFF "+key);
+         println("seqPage.onNotePlay key OFF "+key);
       }
    }
    noteOn[key] = isOn;
