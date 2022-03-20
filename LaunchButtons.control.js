@@ -12,7 +12,7 @@ var userVelNote = false; // false recommended, true NOT recommended.
 var MUSICAL_STOP_STATE = 0;
 var MasterTrackVolume = 1.0;
  
-var dev_leds = true;
+var dancing_leds = false;
 
 
 // New velocity setup, has a set number for low and high, and you use the two middle buttons to index the rest of the velocities.velocity setup is in Launchpad_Step_Sequencer.js
@@ -769,6 +769,9 @@ function onMidi(status, data1, data2)
    }
 }
 
+function FlashColor(col1,col2) {
+   return (timerState<2) ? col1 : col2;
+}
 // Clears all the lights
 function clear()
 {
@@ -792,16 +795,29 @@ function setAllPrimaryPadsTest()
 {
    for(var i=0; i<LED_COUNT; i++)
    {
-      pendingLEDs[i] = Colour.LIME_FULL; 
+      pendingLEDs[i] = Colour.OFF; 
       activeLEDs[i] = -1;
       
    }
+ //  pendingLEDs[LEFT_PAD_LED(0)] = Colour.LIME_FULL;
+ //  pendingLEDs[SCENE_LED(0)] = Colour.ORANGE2;// FlashColor(Colour.ORANGE,Colour.ORANGE_LOW);
+//
+//   pendingLEDs[SCENE_LED(1)] = FlashColor(Colour.ORANGE2, Colour.ORANGE_FULL);
+ 
+ for (i=0;i<8;i++) {
+   setTopLED(i, COLOUR_ANIMATE_RGB[i] );
+   setSceneLEDColor( i,COLOUR_ANIMATE_RGB[i+2]);
+   setLeftLED(i,COLOUR_ANIMATE_RGB[i+1])
+
+ }
+ 
+
 
    for (var c=0;c<GRID_NOTE_ROWS;c++) //
    {
     //  var colour = Math.floor(Math.random()*115)+1;
       for (var r=0;r<GRID_NOTE_ROWS;r++) // GRID_NOTE_ROWS 
-      {  var colour = 90+c;//(r*8)+c +80;
+      {  var colour = COLOUR_ANIMATE_RGB[ (timerState+c) % 8 ];
          setCellLED(c,r, colour );
       }
    }
@@ -811,7 +827,7 @@ function setAllPrimaryPadsTest()
 
 function flush()
 {
-    if (dev_leds) {
+    if (dancing_leds) {
       setAllPrimaryPadsTest()
     }
     else{
@@ -835,13 +851,18 @@ function flush()
 // Sends the Top LED lights to the pendingLEDs array. LED top have a value of 72 to 80
 function setTopLED(index, colour)
 {
-   pendingLEDs[LED.TOP + index] = colour;
+   pendingLEDs[TOP_LED(index)] = colour;
+}
+
+function setLeftLED(index, colour)
+{
+   pendingLEDs[LEFT_PAD_LED(index)] = colour;
 }
 
 // Sends the right LED lights to the pendingLEDs array. LED scene have a value of 64 to 72
 function setSceneLEDColor(index, colour)
 {
-   pendingLEDs[LED.SCENE + index] = colour;
+   pendingLEDs[SCENE_LED(index)] = colour;
 }
 
 

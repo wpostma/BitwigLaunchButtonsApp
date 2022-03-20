@@ -113,6 +113,8 @@ var Colour = // Novation are from the UK
    ROYAL_BLUE_MEDIUM2:42,
    ROYAL_BLUE_LOW:43,
    //44-47 : more blue
+   BLUE:44,
+
    PURPLE_FULL:48,
    PURPLE_MEDIUM:49,
    DEEP_BLUE:50,
@@ -128,16 +130,16 @@ var Colour = // Novation are from the UK
    ROSE_MEDIUM2:58,
    ROSE_LOW:59,
 
-   ORANGE_FULL:60,
-   ORANGE_MEDIUM:61,
-   ORANGE_LOW:62,
-
+   ORANGE:107,
+   
    FOREST_GREEN:63,
    PURPLE:81,
    RASPBERRY:82,
    BROWN:83,
    ORANGE2:84,
-   
+
+
+   INDIGO:52
 
    
    // RED_FLASHING:11,
@@ -146,6 +148,33 @@ var Colour = // Novation are from the UK
    // GREEN_FLASHING:56
 };
 
+var COLOUR_ANIMATE_PULSE = [
+   Colour.OFF,
+   Colour.DARK_GRAY,
+   Colour.LIGHT_GRAY,
+   Colour.WHITE,
+   Colour.WHITE,
+   Colour.LIGHT_GRAY,
+   Colour.DARK_GRAY,
+   Colour.OFF
+
+   
+];
+var COLOUR_ANIMATE_RGB = [
+   Colour.RED_FULL, 
+   Colour.ROSE_MEDIUM,
+   Colour.ORANGE,
+   Colour.YELLOW_FULL,
+   Colour.GREEN_FULL,
+   Colour.BLUE_GREEN_LOW,
+   Colour.BLUE,
+   Colour.FUCHSIA_LOW,
+   Colour.INDIGO,
+   Colour.PURPLE
+];
+
+
+// TRACK COLORS constants
 const RGB_COLORS =
 [
     [ 0.3294117748737335 , 0.3294117748737335 , 0.3294117748737335 , "Dark Gray"],
@@ -180,10 +209,7 @@ const RGB_COLORS =
 // They are used in the format LED.SCENE
 var LED =
 {
-   GRID:0,
-   SCENE:64,
-   TOP:72,
-
+   
    CURSOR_UP:0,  //top button 1
    CURSOR_DOWN:0, //top button 2
    CURSOR_LEFT:0, //top button 3
@@ -220,5 +246,18 @@ var seqPageNoteMode = false;
 var sendNumber = 0;
 var setPan = 0;
 var undo1 = false;
+
+// functional constants. row is zero based (0..7)
+function LEFT_PAD_LED(row) {
+   return 10*((7-row)+1);
+}
+// right side buttons with play icons are scene launchers. these are the leds.
+function SCENE_LED(row) {
+   return (10*((7-row)+1))+9;
+}
+
+function TOP_LED(index) {
+   return 91+index;
+}
 
 
