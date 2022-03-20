@@ -780,13 +780,18 @@ function clear()
 
 }
 
+function setAllPrimaryPads(colour) 
+{
+   for (var c=0;c<GRID_NOTE_ROWS;c++) //
+   for (var r=0;r<GRID_NOTE_ROWS;r++) // GRID_NOTE_ROWS
+      setCellLED(c,r, colour );
+}
+
 
 function flush()
 {
-   // activePage.updateOutputState(); // // set LED state vars
-    for (var c=0;c<GRID_NOTE_ROWS;c++) //
-        for (var r=0;r<GRID_NOTE_ROWS;r++) // GRID_NOTE_ROWS
-           setCellLED(c,r, 120 );
+    activePage.updateOutputState(); // // set LED state vars
+
 
    //setCellLED(0,0, Colour.RED_FLASHING);
    //pendingLEDs[50] = 22;
