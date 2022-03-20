@@ -413,7 +413,10 @@ gridPage.doGridNoteOrCCButton = function(row,column,pressed)
 gridPage.onGridButton = function(row, column, pressed)
 {
 	// Warren adapted to split into a 4 track, 8 scene clip launcher with 4 rows of 8 midi cc and note buttons
-    // println("gridPage.onGridButton row "+row+" column "+column+" pressed "+pressed );
+    if (trace>0) {
+			 println("gridPage.onGridButton row "+row+" column "+column+" pressed "+pressed );
+	}
+
 	if ((row < 4)||(!gridPage.split)) 
 	{
 		var track = column;
@@ -491,7 +494,10 @@ gridPage.updateGrid = function()
    }
 
 
-   this.updateSideButtons();
+   this.updateSideButtons(); // right side buttons.
+
+   // todo left side buttons.
+
    
 };
 

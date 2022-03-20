@@ -46,7 +46,7 @@ var TopButton =
    MIXER:        98
 };
 
-// CCs for the Mixer Buttons (right side scene launching, also for clip launching)
+// CCs for the ScenePlay/Mixer Buttons (right side scene launching, also for clip launching)
 var MixerButton =
 {
    VOLUME:  89,
@@ -260,4 +260,7 @@ function TOP_LED(index) {
    return 91+index;
 }
 
+function IsMixerButton(index) {
+   return (index>=MixerButton.ARM)&&(index<=MixerButton.VOLUME)&&((index % 10)==9);
+}
 

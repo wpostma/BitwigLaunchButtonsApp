@@ -493,11 +493,6 @@ function resetDevice()
   // flushLEDs();
 }
 
-// I'm not sure what these functions do
-// enableAutoFlashing and setGridMappingMode are called during initialization.
-// setDutyCycle is called by the animateLogo function,
-// They are likely something to do with the bitwig logo.
-
 
 function setGridMappingMode()
 {
@@ -601,7 +596,7 @@ function onMidi(status, data1, data2)
    if (isChannelController(status))
    {
       if (trace>0){
-       println("onMidi ischannelcontroller: data1="+data1+" data2="+data2);
+       println("onMidi CC #"+data1+" : data2="+data2);
       }
 
       // isPressed checks whether MIDI signal is above 0 in value declaring that button is being pressed
@@ -609,7 +604,16 @@ function onMidi(status, data1, data2)
 
 	  // This section changes the page within the script displayed on the device
 	  // data1 is the CC, the CC values are defined within the launchpad_contants script and range from 104 to 111 for the topbuttons
-      switch(data1)
+     if (IsMixerButton(data1))
+     {
+        row = GRID_NOTE_ROWS-Math.floor(data1/GRID_COL_MOD);
+         println(" midi SCENE button # " + row + " via CC "+data1);
+
+        
+        activePage.onSceneButton(row, data2 > 0);
+     }
+     else
+     switch(data1)
       {
          case TopButton.CURSOR_UP:
             if (isPressed)
@@ -748,7 +752,7 @@ function onMidi(status, data1, data2)
       var column = (data1 % GRID_COL_MOD)-1;
          
       println("  row = " + row + "col = " + column)   
-      if (row < GRID_NOTE_ROWS)
+      if ((row>=0)&&(row < GRID_NOTE_ROWS))
       {
          
          if (trace>0) {
@@ -757,15 +761,7 @@ function onMidi(status, data1, data2)
            
          activePage.onGridButton(row, column, data2 > 0);
       }
-      else
-      {
-         
-         if (trace>0) {
-            println(" midi SCENE button # " + row )
-         }
-         
-         activePage.onSceneButton(row, data2 > 0);
-      }
+    
    }
 }
 
@@ -872,8 +868,9 @@ function setCellLED(column, row, colour)
    var key = ( (8-row) * GRID_COL_MOD) + column +1;
 
    pendingLEDs[key] = colour;
-   println( " pendingLEDs @ col "+column+", row="+row+" = colour:"+colour+":  index "+key);
-
+   if (trace>3) {
+      println( " setCellLED col "+column+", row="+row+" = colour:"+colour+":  index "+key);
+   }
 
 }
 
@@ -897,7 +894,7 @@ var activeLEDs = new Array(LED_COUNT);
 function flushLEDs()
 {
 
-   if (trace>1) {
+   if (trace>8) {
       println("flushLEDs called");
    };
 
@@ -919,7 +916,7 @@ function flushLEDs()
    if (changedCount == 0) return;
 
    
-   if (trace>1) {
+   if (trace>2) {
       println("flushLEDs active. changedCount "+changedCount);
    };
 
