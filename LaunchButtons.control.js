@@ -12,6 +12,7 @@ var userVelNote = false; // false recommended, true NOT recommended.
 var MUSICAL_STOP_STATE = 0;
 var MasterTrackVolume = 1.0;
  
+var dev_leds = true;
 
 
 // New velocity setup, has a set number for low and high, and you use the two middle buttons to index the rest of the velocities.velocity setup is in Launchpad_Step_Sequencer.js
@@ -226,7 +227,7 @@ function createSpecialTrack(pluginName) {
    
    host.scheduleTask( function() {
        trackBank.scrollToChannel(0);
-       c = RGB_COLORS[Math.floor(Math.random()*RGB_COLORS.length)]
+       c = RGB_COLORS[Math.floor(Math.random()*RGB_COLORS.length)];
        trackBank.getChannel(0).color().set(c[0], c[1], c[2])
        trackBank.getChannel(0).browseToInsertAtStartOfChain();
        application.arrowKeyDown();
@@ -483,7 +484,7 @@ function resetDevice()
    for(var i=0; i<LED_COUNT; i++)
    {
       pendingLEDs[i] = 0;
-      activeLEDs[i] = 0;
+      activeLEDs[i] = -1;
    }
    for(var i=0; i<80; i++)
    {
@@ -787,11 +788,35 @@ function setAllPrimaryPads(colour)
       setCellLED(c,r, colour );
 }
 
+function setAllPrimaryPadsTest() 
+{
+   for(var i=0; i<LED_COUNT; i++)
+   {
+      pendingLEDs[i] = Colour.LIME_FULL; 
+      activeLEDs[i] = -1;
+      
+   }
+
+   for (var c=0;c<GRID_NOTE_ROWS;c++) //
+   {
+    //  var colour = Math.floor(Math.random()*115)+1;
+      for (var r=0;r<GRID_NOTE_ROWS;r++) // GRID_NOTE_ROWS 
+      {  var colour = 90+c;//(r*8)+c +80;
+         setCellLED(c,r, colour );
+      }
+   }
+
+}
+
 
 function flush()
 {
+    if (dev_leds) {
+      setAllPrimaryPadsTest()
+    }
+    else{
     activePage.updateOutputState(); // // set LED state vars
-
+   }
 
    //setCellLED(0,0, Colour.RED_FLASHING);
    //pendingLEDs[50] = 22;
@@ -861,8 +886,10 @@ function flushLEDs()
    // count the number of LEDs that are going to be changed by comparing pendingLEDs to activeLEDs array
    for(var i=0; i<LED_COUNT; i++)
    {
-      if (pendingLEDs[i] != 0) {
-         println("pendingLEDs["+i+"] = "+pendingLEDs[i])
+      if (trace>2) {
+         if (pendingLEDs[i] != 0) {
+            println("pendingLEDs["+i+"] = "+pendingLEDs[i])
+         }
       }
       if (pendingLEDs[i] != activeLEDs[i]) changedCount++;
    }
@@ -893,7 +920,7 @@ function flushLEDs()
          if (colour>127) {
             colour=127;
          }
-         if (colour<0) {
+         if (colour<=0) {
             colour=0;
          }
          sendMidi(0x90, byte, colour);
