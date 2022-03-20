@@ -54,6 +54,14 @@ seqPage.playingStep = -1;
 seqPage.stepSize = STEP_SIZE.STEP_1_16;
 
 
+seqPage.onRightSideButton = function(row,isPressed)
+{
+	// 
+	if (isPressed) {
+		println("onRightSideButton "+row);
+	}
+}
+
 seqPage.CursorLeft = function(isPressed)
 {
 

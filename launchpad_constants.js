@@ -4,6 +4,7 @@ var NOTE_ON = 144; // + channel.
 var NOTE_OFF = 128;
 
 var CC_MSG =  176; // + midi channel.
+var CC_MSG2 =  180; // launchbuttons transport midi channel offset
 
 var GRID_NOTE_MAX=90;
 var GRID_NOTE_MIN=10;
@@ -59,6 +60,25 @@ var MixerButton =
    ARM:     19
 };
 
+var CCRightSideFirst = 1; // via CC_MSG;
+var CCRightSideLast = 8;
+
+
+function IsRightSideButton(index) {
+   return (index>=CCRightSideFirst)&&(index<=CCRightSideLast);
+}
+
+var CCTransport = 
+{
+   PLAY:116, // via CC_MSG,
+   STOP:        94, // via CC_MSG2..
+   RECORD:      95,
+   PLUS:        96,
+   RECORD_MODE: 97, // not sure what this icon means, it's a filled circle and a circle outline overlapping 
+   SEND_A:      98,
+   SEND_B:      99
+}
+
 // Called the scripts mainly within launchpad_grid
 // It is used for the Bitwig logo and the VUmeter
 function mixColour(red, green, blink)
@@ -89,7 +109,7 @@ var Colour = // Novation are from the UK
    LIGHT_YELLOW_FULL:12,
    YELLOW_FULL: 13,
    YELLOW_MEDIUM: 14,
-   YELLOW_LOW: 15,
+   YELLOW_LOW: 15, // ???ugly???
 
    LIGHT_GREEN_FULL:16,
    GREEN_FULL:17,

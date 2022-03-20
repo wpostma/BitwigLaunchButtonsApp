@@ -591,12 +591,13 @@ function onMidi(status, data1, data2)
    if (trace>0){
 	printMidi(status, data1, data2);
    }
-   if (MIDIChannel(status) != 0) return;
+   var channel = MIDIChannel(status);
+   
+   if ((status>=CC_MSG)&&(status<=CC_MSG2))
+   {  
 
-   if (isChannelController(status))
-   {
       if (trace>0){
-       println("onMidi CC #"+data1+" : data2="+data2);
+       println("onMidi channel"+channel+" CC #"+data1+" : data2="+data2);
       }
 
       // isPressed checks whether MIDI signal is above 0 in value declaring that button is being pressed
@@ -604,7 +605,37 @@ function onMidi(status, data1, data2)
 
 	  // This section changes the page within the script displayed on the device
 	  // data1 is the CC, the CC values are defined within the launchpad_contants script and range from 104 to 111 for the topbuttons
-     if (IsMixerButton(data1))
+     if ((status==CC_MSG2)&&(data1>=CCTransport.STOP)&&(data1<=CCTransport.SEND_B))
+     {
+         //println("more transport stuff... "+data1)
+         switch(data1) {
+            case CCTransport.STOP:
+                  transport.stop();
+                  showPopupNotification('Stop');
+                  break;
+            case CCTransport.RECORD:
+                  transport.record();
+                  break;
+            case CCTransport.PLUS:
+                  break;
+            case CCTransport.RECORD_MODE:
+                  break;         
+            case CCTransport.SEND_A:
+                  break;
+            case CCTransport.SEND_B:
+                  break;
+            // the device  mixer knob icon in the app opens a panel in the app and doesnt send a cc.      
+
+         }
+
+     }
+     else if ((status==CC_MSG)&&IsRightSideButton(data1))
+     {
+        row = data1-1;
+        activePage.onRightSideButton(row, data2 > 0);
+     }
+
+     else if ((status==CC_MSG)&&IsMixerButton(data1))
      {
         row = GRID_NOTE_ROWS-Math.floor(data1/GRID_COL_MOD);
          println(" midi SCENE button # " + row + " via CC "+data1);
@@ -612,9 +643,17 @@ function onMidi(status, data1, data2)
         
         activePage.onSceneButton(row, data2 > 0);
      }
-     else
+     else if (status==CC_MSG)
      switch(data1)
       {
+         case CCTransport.PLAY:
+            if (isPressed) {
+               if (playing==0) {
+                  transport.play();
+                  showPopupNotification('Play');
+               }
+            }
+            break;
          case TopButton.CURSOR_UP:
             if (isPressed)
             {  
@@ -774,7 +813,7 @@ function clear()
    for(var i=0; i<LED_COUNT; i++)
    {
       pendingLEDs[i] = 0;// Colour.OFF; 
-      activeLEDs[i] = 0;
+      activeLEDs[i] = -1;
    }
 
 
@@ -789,6 +828,8 @@ function setAllPrimaryPads(colour)
 
 function setAllPrimaryPadsTest() 
 {
+   println("setAllPrimaryPadsTest");
+
    for(var i=0; i<LED_COUNT; i++)
    {
       pendingLEDs[i] = Colour.OFF; 

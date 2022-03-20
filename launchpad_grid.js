@@ -115,33 +115,40 @@ gridPage.ChangeVelocity = function()
 
 gridPage.updateOutputState = function()
 {
-   clear();
+   //clear();
 
    
    this.updateGrid();
    var c = Colour.OFF;
    var cls1 = ((WRITEOVR) ? [Colour.RED_FLASHING,Colour.RED_FULL]:[Colour.RED_FLASHING,Colour.YELLOW_FULL]); 
-   var cls2 = ((WRITEOVR) ? [Colour.RED_FLASHING,Colour.RED_FULL]:[Colour.YELLOW_FLASHING,Colour.YELLOW_FULL]);  
+   var cls2 = ((WRITEOVR) ? [Colour.RED_FLASHING,Colour.RED_FULL]:[Colour.BLUE,Colour.RED_FULL]);  
    // Set the top LEDs while in Clip Launcher
    clipActive = transport.isPlaying().get();
 
-   setTopLED(0,  clipActive ? Colour.GREEN_FULL : Colour.OFF );
+   setTopLED(0,  clipActive ? Colour.GREEN_FULL : Colour.GREEN_LOW );
 
    switch(view_shift) {
 	   case 0:
-		   	c = Colour.GREEN_FULL; break;
+		   	c = Colour.GREEN_FULL;
+			break;
 		case 1:
-			c = Colour.GREEN_LOW; break;
+			c = Colour.GREEN_LOW; 
+			break;
 		case 2:
-			c = Colour.YELLOW_LOW; break;
+			c = Colour.FUCHSIA_FULL; 
+			break;
 		default:
 			c = Colour.RED_LOW;
    }
 	setTopLED(1,  c );
-   
-   setTopLED(5, IS_SHIFT_PRESSED ? Colour.YELLOW_FULL : (ARMED == 9 ? (ARMED?cls1[0]:cls1[1]):Colour.GREEN_LOW)); //TVbene: ARMED == 9 is for the delete clip mode
-   setTopLED(6, IS_SHIFT_PRESSED ? Colour.YELLOW_FULL : (ARMED == 10 ? (ARMED?cls2[0]:cls2[1]):Colour.GREEN_LOW)); //TVbene: ARMED == 10 is for the select clip mode
-   setTopLED(7, IS_SHIFT_PRESSED ? Colour.AMBER_FULL : Colour.GREEN_LOW);
+  
+	setTopLED(2, Colour.BLUE);
+	setTopLED(3, Colour.BLUE);
+	setTopLED(4, Colour.ORANGE);
+
+   setTopLED(5, IS_SHIFT_PRESSED ? Colour.BLUE_GREEN_FULL : Colour.ORANGE  ); 
+   setTopLED(6, IS_SHIFT_PRESSED ? Colour.SKY_BLUE_FULL   : Colour.BLUE);
+   setTopLED(7, IS_SHIFT_PRESSED ? Colour.AMBER_FULL      : Colour.YELLOW_FULL);
    
   
 };
@@ -221,6 +228,13 @@ gridPage.cursorDeviceReplace = function()
 	}
 }
 
+gridPage.onRightSideButton = function(row,isPressed)
+{
+	// 
+	if (isPressed) {
+		println("onRightSideButton "+row);
+	}
+}
 // SIDE BUTTONS:
 //   TVbene: side buttons select post record delay and launch quantization
 gridPage.onSceneButton = function(row, isPressed)
@@ -484,14 +498,39 @@ gridPage.onGridButton = function(row, column, pressed)
 
 };
 
+function setTopSplitGridColor(colour) 
+{
+   for (var c=0;c<8;c++) //
+   for (var r=0;r<4;r++) // GRID_NOTE_ROWS
+      setCellLED(c,r, colour );
+}
+function setBottomSplitGridColor(colour) 
+{
+   for (var c=0;c<8;c++) //
+   for (var r=4;r<8;r++) // GRID_NOTE_ROWS
+      setCellLED(c,r, colour );
+}
+
 // updates the grid (no more vumeter feature)
 gridPage.updateGrid = function()
 {
+	println("grid update");
 
-   for(var r=0; r<8; r++)
-   {
-      this.updateTrackValue(r); // one column of grid
-   }
+
+//	setAllPrimaryPads( Colour.RED_FULL);
+	if (playing)
+		setTopSplitGridColor(Colour.FUCHSIA_FULL)
+	else
+		setTopSplitGridColor(Colour.OFF);
+	
+	setBottomSplitGridColor(Colour.YELLOW_MEDIUM);
+
+	// clip status color set
+	// for(var r=0; r<8; r++)
+	// {
+	// 	this.updateTrackValue(r); // one column of grid
+	// }
+
 
 
    this.updateSideButtons(); // right side buttons.
@@ -580,15 +619,17 @@ gridPage.updateSideButtons  = function()
 		   } 
 		   else 
 		   {
-				
-			     if (( gridPage.grid_shift==2)&&(j==1)) {
-					 alt = Colour.YELLOW_LOW;
-				 } else if (( gridPage.grid_shift==4)&&(j==3)) {
-					alt = Colour.YELLOW_LOW;
+			
+				if (( gridPage.grid_shift==2)&&(j==1)) {
+					alt = Colour.OFF;
+				} 
+				else if (( gridPage.grid_shift==4)&&(j==3)) {
+					alt = Colour.OFF;
 				}
 				else
 					alt = Colour.GREEN_LOW;
-			    setSceneLEDColor(j, scenePlaying ? Colour.GREEN_FULL : alt );
+				
+				setSceneLEDColor(j, scenePlaying ? Colour.GREEN_FULL : alt );
 		   }
 		 
 		}
@@ -610,6 +651,7 @@ gridPage.updateSideButtons  = function()
 // track = column
 gridPage.updateTrackValue = function(track)
 {
+	println("updateTrack")
 	track_offset = track;
 
 	active = trackBank.getChannel(track_offset).isActivated().get();
@@ -628,55 +670,9 @@ gridPage.updateTrackValue = function(track)
 		var col = Colour.OFF;
 		var fullval = mute[track_offset] ? 1 : 3;
 	
-		 a = Colour.RED_LOW;
-		 b = Colour.RED_FULL;
-		 if (view_shift==1)  {
-			 a = Colour.GREEN_LOW;
-			 b = Colour.GREEN_FULL;
-		 } else  if (view_shift==2)  {
-			a = Colour.AMBER_FULL;
-			b = Colour.YELLOW_LOW;
-		} else  if (view_shift==3)  {
-			a = Colour.OFF;
-			b = Colour.YELLOW_LOW;
-		}
-
-		if (scene==4){
-           col = (track>=4) ? a : b;
-		}
-		else if (scene==5) {
-			col = (track>=4) ? b : a;
-		} 
-		else if (scene==6) {
-			col = (track>=4) ? a : b;
-		} 
-		else if (scene==7) {
-			col = (track>=4) ? b : a;
-			// quantization shown as a green thing.
-			q = quant.get();
-			if  ((track==0)&&(q=="1/4")) {
-			  col = Colour.GREEN_LOW;	
-			}	
-			else if  ((track==1)&&(q=="1/2")) {
-				col = Colour.GREEN_LOW;	
-			}	
-			else if  ((track==2)&&(q=="1")) {
-				col = Colour.GREEN_LOW;	
-			}	
-			else if  ((track==3)&&(q=="2")) {
-				col = Colour.GREEN_LOW;	
-			}	
-			else if  ((track==4)&&(q=="4")) {
-				col = Colour.GREEN_LOW;	
-			}
-			
-			  
-		} 
 			 
 	
 		
-		if (scene<4)
-		{
 		 if (hasContent[i] > 0)
 		 { 
 			if ((isQueued[i] > 0)&&(tplay))
@@ -718,26 +714,16 @@ gridPage.updateTrackValue = function(track)
 			}
 			else
 			{
-			   col = Colour.GREEN_LOW; 
+			   col = -1;//Colour.GREEN_LOW; 
 			}
-		 }
-		 else
-		 {
-			 // not selected track : yellow.
-			 if (selected) {
-				 col = Colour.YELLOW_FULL;
-			 } 
-			 else if ( active ) {
-			 col = Colour.YELLOW_LOW;
-			 } 
-			 else {
-				col = Colour.OFF; // disabled
-			 }
-		 }
 		}
+		else
+			col = -1;
+		
 
-
+		if (col>=0) {
 		 setCellLED(track, scene, col);
+		}
 
 	}
 	

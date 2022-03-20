@@ -9,6 +9,14 @@ keysPage = new Page();
 keysPage.title = "Keys / Drums";
 
 
+keysPage.onRightSideButton = function(row,isPressed)
+{
+	// 
+	if (isPressed) {
+		println("onRightSideButton "+row);
+	}
+}
+
 keysPage.CursorLeft = function(isPressed)
 {
 
