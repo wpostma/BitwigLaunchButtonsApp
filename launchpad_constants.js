@@ -284,3 +284,21 @@ function IsMixerButton(index) {
    return (index>=MixerButton.ARM)&&(index<=MixerButton.VOLUME)&&((index % 10)==9);
 }
 
+function ViewShiftColour(index) {
+   switch (index) {
+      case 0:
+         return Colour.BLUE_GREEN_FULL;
+      case 1:
+         return Colour.BLUE;
+      case 2:
+         return Colour.ORANGE;
+      case 3:
+         return Colour.FUCHSIA_FULL;
+      default:
+         return Colour.OFF;
+
+   }
+}
+    
+
+

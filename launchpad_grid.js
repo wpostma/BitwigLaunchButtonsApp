@@ -128,23 +128,11 @@ gridPage.updateOutputState = function()
 
    setTopLED(0,  clipActive ? Colour.GREEN_FULL : Colour.GREEN_LOW );
 
-   switch(view_shift) {
-	   case 0:
-		   	c = Colour.GREEN_FULL;
-			break;
-		case 1:
-			c = Colour.GREEN_LOW; 
-			break;
-		case 2:
-			c = Colour.FUCHSIA_FULL; 
-			break;
-		default:
-			c = Colour.RED_LOW;
-   }
-	setTopLED(1,  c );
+
+	setTopLED(1,  ViewShiftColour(view_shift) ); // same color as the bottom half of the grid when split
   
-	setTopLED(2, Colour.BLUE);
-	setTopLED(3, Colour.BLUE);
+	setTopLED(2, Colour.ROSE_FULL);
+	setTopLED(3, Colour.ROSE_FULL);
 	setTopLED(4, Colour.ORANGE);
 
    setTopLED(5, IS_SHIFT_PRESSED ? Colour.BLUE_GREEN_FULL : Colour.ORANGE  ); 
@@ -499,13 +487,13 @@ gridPage.onGridButton = function(row, column, pressed)
 
 };
 
-function setTopSplitGridColor(colour) 
+function setTopSplitGridColour(colour) 
 {
    for (var c=0;c<8;c++) //
    for (var r=0;r<4;r++) // GRID_NOTE_ROWS
       setCellLED(c,r, colour );
 }
-function setBottomSplitGridColor(colour) 
+function setBottomSplitGridColour(colour) 
 {
    for (var c=0;c<8;c++) //
    for (var r=4;r<8;r++) // GRID_NOTE_ROWS
@@ -515,17 +503,19 @@ function setBottomSplitGridColor(colour)
 // updates the grid (no more vumeter feature)
 gridPage.updateGrid = function()
 {
-	println("grid update");
-
+	//println("grid update");
 
 //	setAllPrimaryPads( Colour.RED_FULL);
 	if (playing)
-		setTopSplitGridColor(Colour.OFF)
+		setTopSplitGridColour(Colour.OFF)
 	else
-		setTopSplitGridColor(Colour.DARK_GRAY);
+		setTopSplitGridColour(Colour.DARK_GRAY);
 
+
+	setBottomSplitGridColour(ViewShiftColour(view_shift));
+		
+		
 	
-	setBottomSplitGridColor(Colour.YELLOW_MEDIUM);
 
 	// clip status color set
 	 for(var col=0; col<8; col++)
@@ -657,7 +647,7 @@ gridPage.updateSideButtons  = function()
 // track = column
 gridPage.updateTrackValue = function(track,active,selected)
 {
-	println("updateTrack")
+	//println("updateTrack "+track);
 	track_offset = track;
 
 	

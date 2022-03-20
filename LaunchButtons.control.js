@@ -701,7 +701,7 @@ function onMidi(status, data1, data2)
               if(view_shift>3) {
                  view_shift=0;
               }
-              showPopupNotification("sub mode "+view_shift);
+              showPopupNotification("KEYS PAGE "+(view_shift+1));
             }
             else
             {
