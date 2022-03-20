@@ -115,7 +115,8 @@ gridPage.ChangeVelocity = function()
 
 gridPage.updateOutputState = function()
 {
-   //clear();
+   //clear(); // its problematic to do this.
+
 
    
    this.updateGrid();
@@ -519,17 +520,22 @@ gridPage.updateGrid = function()
 
 //	setAllPrimaryPads( Colour.RED_FULL);
 	if (playing)
-		setTopSplitGridColor(Colour.FUCHSIA_FULL)
+		setTopSplitGridColor(Colour.OFF)
 	else
-		setTopSplitGridColor(Colour.OFF);
+		setTopSplitGridColor(Colour.DARK_GRAY);
+
 	
 	setBottomSplitGridColor(Colour.YELLOW_MEDIUM);
 
 	// clip status color set
-	// for(var r=0; r<8; r++)
-	// {
-	// 	this.updateTrackValue(r); // one column of grid
-	// }
+	 for(var col=0; col<8; col++)
+	 {
+		
+		active = trackBank.getChannel(col).isActivated().get();
+		selected = active && trackEquality[col].get();
+	
+	 	this.updateTrackValue(col,active,selected); // one column of grid
+	 }
 
 
 
@@ -649,13 +655,13 @@ gridPage.updateSideButtons  = function()
 
 
 // track = column
-gridPage.updateTrackValue = function(track)
+gridPage.updateTrackValue = function(track,active,selected)
 {
 	println("updateTrack")
 	track_offset = track;
 
-	active = trackBank.getChannel(track_offset).isActivated().get();
-	selected = active && trackEquality[track_offset].get();
+	
+	//selected = active && trackEquality[track_offset].get();
 	//println("selected "+selected);
 	
 	tplay = transport.isPlaying().get();
@@ -714,7 +720,7 @@ gridPage.updateTrackValue = function(track)
 			}
 			else
 			{
-			   col = -1;//Colour.GREEN_LOW; 
+			   col = Colour.GREEN_LOW; // clip exists, not playing. 
 			}
 		}
 		else
