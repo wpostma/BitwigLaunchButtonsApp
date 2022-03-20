@@ -1,77 +1,9 @@
-// FrankenLaunchpad Split MK1 WP : 2022-03-18
+// LaunchButtons  WP : 2022-03-18
 //
-// Novation Launchpad script variant by Warren.Postma@gmail.com
-// Heavily modified script for live guitar looping.
-// Intended to be used with a specially configured template
-// bitwig project.
-//
-// API Level 10 
-//
-// Script of Theseus: This script has been through uncountable
-// hands, but is mostly based on some early bitwig 1.x era stuff
-// shipped by Bitwig.
-//
-// Use the default scripts or the DrivenByMoss scripts if you want
-// more features.  Many features from the standard Bitwig script
-// are actually removed.
-//
-// Main GRID mode is a split of clip view plus bottom half of  the
-// grid area is for playing midi notes, or midi CC notes, or for
-// various "looper pedal" type functions that might be useful for
-// live looping with keys or guitars or vocals. 
-//
-// The top four rows of the grid start out accessing scene 1-4.
-// The MIXER button plus page left and page right shift this from 
-// 2-6 and then from 4-8.  By trying to go too far left when at scene 1-4
-// you can quickly get to scene 4-8 without going through the other
-// middle state.
-//
-//
-// TODO:
-//
-// *GUITAR LOOPER LOGIC:
-//  - Ability to set up a project that will keep the live guitar
-//    always playing through a non-looped audio track that is
-//    monitoring the guitar input, except when we want it ducked.
-//  - Ability to seamlessly multi track loop 1 to 8 different tracks
-//    all mapped to one audio input and manage which tracks are 
-//    monitoring, so only ONE is ever monitoring.
-//  - Clip delete and re-record. 
-//  - Undo/Redo actions from launchpad buttons.
-//   
-// MORE MUSICAL METRONOME:
-//  - Ability to trigger a track playback that is off the visible
-//    launchpad grid that exists only as a tempo reference, but is
-//    more musical than the built in metronome. It could contain
-//    a shaker sound, or an acoustic drum "tchak".
-//
-// *MUSICAL STOP:
-//   When jamming and you hit play/stop it's very musically unsatisfying
-//   just to stop suddenly.
-//   - Programmable fade out time (shown as a launchpad button light)
-//   - 1 second fade out, 4 second fade out, 8 second fade out.
-//   
-// *LAYERED INSTRUMENTS CROSS FADE:
-//    Using a layer container to cross fade between one or both
-//    instruments inside the instrument layer.
-//    (Same clip keeps playing but the levels 
-//      in the instrument change)
-//  
-// *TRACK TO TRACK CROSS FADE:
-//    Cross fade where you stop one track after the other one has
-//    started and faded in.  Fade out controls the master volume
-//    and must restore it to its original value when track play
-//    has stopped.
-//
-// If this script is being maintained newer versions will be at
-// https://github.com/wpostma/LaunchpadScriptV3 
+// Novation Launchpad script hacked up to work with BassApps.de/launchbuttons.
 
-// you can't change things currently limited to 8 without 
-// rewriting a large amount of this script due to its
-// assumption that there are 8 scenes and that the launchpad 
-// grid is always 8 by 8.
 
-var trace=0; //  type trace=1 in the controller script console to enable most debug messages
+var trace= 2; //  type trace=1 in the controller script console to enable most debug messages
 var view_shift=0; // 0,1,2,3,4 when cursor_down is pressed.
 var activeNotes = null;
 var playing=0;
@@ -93,19 +25,20 @@ for	(index = 127; index > -1; index--)
 loadAPI(10);
 
 // This stuff is all about defining the script and getting it to autodetect and attach the script to the controller
-host.defineController("Novation", "Launchpad Split MK1 WP", "1.0", "e6a21650-92f0-11ea-ab12-0800200c9a66");
+host.defineController("BassApps", "LaunchButtons WP", "1.0", "e6a21650-92f0-11ea-ab12-0800200c9a66");
 host.defineMidiPorts(1, 1);
-host.addDeviceNameBasedDiscoveryPair(["Launchpad"], ["Launchpad"]);
-host.addDeviceNameBasedDiscoveryPair(["Launchpad S"], ["Launchpad S"]);
-host.addDeviceNameBasedDiscoveryPair(["Launchpad Mini"], ["Launchpad Mini"]);
-if(host.platformIsLinux())
-{
-	for(var i=1; i<16; i++)
-	{
-	   host.addDeviceNameBasedDiscoveryPair(["Launchpad S " + + i.toString() + " MIDI 1"], ["Launchpad S " + + i.toString() + " MIDI 1"]);
-	   host.addDeviceNameBasedDiscoveryPair(["Launchpad Mini " + + i.toString() + " MIDI 1"], ["Launchpad Mini " + + i.toString() + " MIDI 1"]);
-	}
-}
+
+//host.addDeviceNameBasedDiscoveryPair(["Launchpad"], ["Launchpad"]);
+//host.addDeviceNameBasedDiscoveryPair(["Launchpad S"], ["Launchpad S"]);
+//host.addDeviceNameBasedDiscoveryPair(["Launchpad Mini"], ["Launchpad Mini"]);
+// if(host.platformIsLinux())
+// {
+// 	for(var i=1; i<16; i++)
+// 	{
+// 	   host.addDeviceNameBasedDiscoveryPair(["Launchpad S " + + i.toString() + " MIDI 1"], ["Launchpad S " + + i.toString() + " MIDI 1"]);
+// 	   host.addDeviceNameBasedDiscoveryPair(["Launchpad Mini " + + i.toString() + " MIDI 1"], ["Launchpad Mini " + + i.toString() + " MIDI 1"]);
+// 	}
+// }
 
 function showPopupNotification( amsg) {
    println('::> '+amsg);
@@ -547,11 +480,12 @@ function resetDevice()
   } 
    sendMidi(0xB0, 0, 0);
 
-   for(var i=0; i<80; i++)
+   for(var i=0; i<LED_COUNT; i++)
    {
       pendingLEDs[i] = 0;
+      activeLEDs[i] = 0;
    }
-   for(var i=0; i<64; i++)
+   for(var i=0; i<80; i++)
    {
       isPlaying[i] = 0;
    }
@@ -806,17 +740,18 @@ function onMidi(status, data1, data2)
       }
    }
 
-   if (isNoteOn(status) || isNoteOff(status, data2))
+   if ((isNoteOn(status) || isNoteOff(status, data2))&&(data1>=GRID_NOTE_MIN))
    {
-      var row = data1 >> 4;
-      var column = data1 & 0xF;
+      var row = Math.floor(data1/GRID_COL_MOD); 
+      row = GRID_NOTE_ROWS-row;
+      var column = (data1 % GRID_COL_MOD)-1;
          
-         
-      if (column < 8)
+      println("  row = " + row + "col = " + column)   
+      if (row < GRID_NOTE_ROWS)
       {
-
+         
          if (trace>0) {
-            println(" midi GRID note  row = " + row + "col = " + column)
+            println(" Midi GRID note  row = " + row + "col = " + column)
             }
            
          activePage.onGridButton(row, column, data2 > 0);
@@ -825,8 +760,8 @@ function onMidi(status, data1, data2)
       {
          
          if (trace>0) {
-            println(" midi SCENE button #" + row )
-            }
+            println(" midi SCENE button # " + row )
+         }
          
          activePage.onSceneButton(row, data2 > 0);
       }
@@ -836,15 +771,30 @@ function onMidi(status, data1, data2)
 // Clears all the lights
 function clear()
 {
-   for(var i=0; i<80; i++)
+   for(var i=0; i<LED_COUNT; i++)
    {
-      pendingLEDs[i] = Colour.OFF;
+      pendingLEDs[i] = 0;// Colour.OFF; 
+      activeLEDs[i] = 0;
    }
+
+
 }
+
 
 function flush()
 {
-    activePage.updateOutputState(); // // set LED state vars
+   // activePage.updateOutputState(); // // set LED state vars
+    for (var c=0;c<GRID_NOTE_ROWS;c++) //
+        for (var r=0;r<GRID_NOTE_ROWS;r++) // GRID_NOTE_ROWS
+           setCellLED(c,r, 120 );
+
+   //setCellLED(0,0, Colour.RED_FLASHING);
+   //pendingLEDs[50] = 22;
+   //pendingLEDs[144] = 51;
+   // 33 bright green
+   // 99 amber
+   // 1 pale gray
+   // 41 bright blue
 
 
    flushLEDs();
@@ -868,10 +818,11 @@ function setSceneLEDColor(index, colour)
 // Sends the main pads to the pendingLEDs array. LED scene have a value of 0 to 63
 function setCellLED(column, row, colour)
 {
-   var key = row * 8 + column;
+   var key = ( (8-row) * GRID_COL_MOD) + column +1;
 
    pendingLEDs[key] = colour;
-   //println( " pendingLEDs @"+column+", "+row+" = "+colour);
+   println( " pendingLEDs @ col "+column+", row="+row+" = colour:"+colour+":  index "+key);
+
 
 }
 
@@ -887,8 +838,8 @@ function setCellLED2(track, colour)
  
  // arrays of 80 buttons, the main 64 pads and the 8 at the top and 8 at side. Pending is used for lights to be sent, active contains the lights already on
 
-var pendingLEDs = new Array(80);
-var activeLEDs = new Array(80);
+var pendingLEDs = new Array(LED_COUNT);
+var activeLEDs = new Array(LED_COUNT);
 
 // This function compares the LEDs in pending to those in active and if there is a difference it will send them via MIDI message
 // If there is more than 30 lights changed it sends the MIDI in a single message ("optimized mode") rather than individually
@@ -903,8 +854,11 @@ function flushLEDs()
    var changedCount = 0;
 
    // count the number of LEDs that are going to be changed by comparing pendingLEDs to activeLEDs array
-   for(var i=0; i<80; i++)
+   for(var i=0; i<LED_COUNT; i++)
    {
+      if (pendingLEDs[i] != 0) {
+         println("pendingLEDs["+i+"] = "+pendingLEDs[i])
+      }
       if (pendingLEDs[i] != activeLEDs[i]) changedCount++;
    }
 
@@ -915,52 +869,36 @@ function flushLEDs()
    if (trace>1) {
       println("flushLEDs active. changedCount "+changedCount);
    };
-   
-   // if there is a lot of LEDs, use an optimized mode
-   // (which looks to me like it sends all in one MIDI message
-   //TVbene changed to prevent optimised mode
-   if (changedCount > 100)
+
+
+   // var colour = 22;
+   // for (var byte=0;byte<99;byte++) {
+   //    sendMidi(0x90, byte, colour);
+   // }
+
+
+   for(var i = 0; i<LED_COUNT; i++)
    {
-      if (trace>1) {
-         println("flushLEDs optimized. "+changedCount);
-      };
-      // send using channel 3 optimized mode
-      for(var i = 0; i<80; i+=2)
+      if (pendingLEDs[i] != activeLEDs[i])
       {
-         sendMidi(0x92, pendingLEDs[i], pendingLEDs[i+1]);
          activeLEDs[i] = pendingLEDs[i];
-         activeLEDs[i+1] = pendingLEDs[i+1];
-      }
-      sendMidi(0xB0, 104 + 7, activeLEDs[79]); // send dummy message to leave optimized mode
-   }
-   // if not a lot of LEDs need changing send them in individual MIDI messages
-   else
-   {
-      for(var i = 0; i<80; i++)
-      {
-         if (pendingLEDs[i] != activeLEDs[i])
-         {
-            activeLEDs[i] = pendingLEDs[i];
 
-            var colour = activeLEDs[i];
-
-            if (i < 64) // Main Grid
-            {
-               var column = i & 0x7;
-               var row = i >> 3;
-               sendMidi(0x90, row*16 + column, colour);
-            }
-            else if (i < 72)    // Right buttons
-            {
-               sendMidi(0x90, 8 + (i - 64) * 16, colour);
-            }
-            else    // Top buttons
-            {
-               sendMidi(0xB0, 104 + (i - 72), colour);
-            }
+         var colour = activeLEDs[i];
+         var byte = i;
+         if (colour>127) {
+            colour=127;
          }
+         if (colour<0) {
+            colour=0;
+         }
+         sendMidi(0x90, byte, colour);
+    
+         //    sendMidi(0xB0, 104 + (i - 72), colour);
+         
       }
    }
+
+
 }
 
 // This function is not called anywhere within the rest of the Launchpad script. textToPattern sounds like it may have been the start of displaying text on the Launchpad, or could be left from another script for another device.

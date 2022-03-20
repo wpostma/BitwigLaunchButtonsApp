@@ -1,32 +1,62 @@
+var LED_COUNT = 100;
+
 var NOTE_ON = 144; // + channel.
 var NOTE_OFF = 128;
 
 var CC_MSG =  176; // + midi channel.
 
+var GRID_NOTE_MAX=90;
+var GRID_NOTE_MIN=10;
+var GRID_NOTE_ROWS = 8;
+var GRID_NOTE_COLS = 8;
+var GRID_COL_MOD = 10;
+
+/*
+
+LAUNCHBUTTONS GRID MIDI Notes:
+
+ MIDI NOTE 11 - bottom left note
+ ...
+ MIDI NOTE 88 - top right note
+ 
+ TOP ROW BUTTONS:
+ CC 91,92,93,94,95,96,97,98
+
+LEFT SIDE CC BUTTONS TOP TO BOTTOM:
+CC 80,70,60,50,40,30,20,10
+
+RIGHT SIDECC BUTTONS WITH PLAY ARROWS: (SCENE LAUNCH,MIXER BUTTONS)
+CC 89,79,69,59,49,39,29,19
+
+RIGHT SIDE BLUE BUTTONS NO ARROWS:
+CC 1,2,3,4,5,6,7,8
+
+*/
+
 // CCs for the Top buttons
 var TopButton =
 {
-   CURSOR_UP:104,
-   CURSOR_DOWN:105,
-   CURSOR_LEFT:106,
-   CURSOR_RIGHT:107,
-   SESSION:108,
-   USER1:109,
-   USER2:110,
-   MIXER:111
+   CURSOR_UP:    91,
+   CURSOR_DOWN:  92,
+   CURSOR_LEFT:  93,
+   CURSOR_RIGHT: 94,
+   SESSION:      95,
+   USER1:        96,
+   USER2:        97,
+   MIXER:        98
 };
 
-// CCs for the Mixer Buttons
+// CCs for the Mixer Buttons (right side scene launching, also for clip launching)
 var MixerButton =
 {
-   VOLUME:0,
-   PAN:1,
-   SEND_A:2,
-   SEND_B:3,
-   STOP:4,
-   TRK_ON:5,
-   SOLO:6,
-   ARM:7
+   VOLUME:  89,
+   PAN:     79,
+   SEND_A:  69,
+   SEND_B:  59,
+   STOP:    49,
+   TRK_ON:  39,
+   SOLO:    29,
+   ARM:     19
 };
 
 // Called the scripts mainly within launchpad_grid
@@ -38,8 +68,8 @@ function mixColour(red, green, blink)
 
 // Defines the values to be sent for the colours
 var Colour = // Novation are from the UK
-{
-   OFF:12,
+{  UNUSED:-1,
+   OFF:0, // was 12
    RED_LOW:13,
    RED_FULL:15,
    AMBER_LOW:29,
@@ -50,7 +80,7 @@ var Colour = // Novation are from the UK
    LIME:0x3D,
    HEADER:mixColour(0,1,false),
    GREEN_LOW:28,
-   GREEN_FULL:60,
+   GREEN_FULL:22, 
    RED_FLASHING:11,
    AMBER_FLASHING:59,
    YELLOW_FLASHING:58,
@@ -95,14 +125,14 @@ var LED =
    SCENE:64,
    TOP:72,
 
-   CURSOR_UP:0,
-   CURSOR_DOWN:1,
-   CURSOR_LEFT:2,
-   CURSOR_RIGHT:3,
-   SESSION:4,
-   USER1:5,
-   USER2:6,
-   MIXER:7,
+   CURSOR_UP:0,  //top button 1
+   CURSOR_DOWN:0, //top button 2
+   CURSOR_LEFT:0, //top button 3
+   CURSOR_RIGHT:0, //top button 4
+   SESSION:0,  //top button 5
+   USER1:48,   //top button 6
+   USER2:49,   //top button 7
+   MIXER:50,   //top button 8
 
    VOLUME:0,
    PAN:1,
