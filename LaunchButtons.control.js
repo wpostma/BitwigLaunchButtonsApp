@@ -753,7 +753,12 @@ function onMidi(status, data1, data2)
             }
             else 
             if (isPressed) {
-               isSetPressed ? previousMode() : cursorTrack.selectPrevious();
+               if (isSetPressed) {
+                   previousMode();
+                  } 
+                  else {
+                     cursorTrack.selectPrevious();
+                  }
             }
             break;
 
@@ -764,7 +769,12 @@ function onMidi(status, data1, data2)
             }
             else 
             if (isPressed) {
-               isSetPressed ? nextMode() : cursorTrack.selectNext();
+               if (isSetPressed) { 
+                      nextMode();
+                }
+                else { 
+                   cursorTrack.selectNext();
+                }
             }
             break;
 	

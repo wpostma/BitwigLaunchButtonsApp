@@ -444,7 +444,7 @@ gridPage.onGridButton = function(row, column, pressed)
 	if (gridPage.split) {
 		maxrow = 4;
 	}
-	
+
 	if ((row < 4)||(!gridPage.split)) 
 	{
 		var track = column;
@@ -755,6 +755,10 @@ gridPage.updateTrackValue = function(maxrow,track,active,selected)
 			{
 			   col = Colour.GREEN_LOW; // clip exists, not playing. 
 			}
+		}
+		else if (selected) {
+			col = Colour.LIGHT_GRAY;
+
 		}
 		else
 			col = -1;
