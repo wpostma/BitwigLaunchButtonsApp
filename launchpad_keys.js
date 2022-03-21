@@ -30,7 +30,8 @@ keysPage.CursorRight = function(isPressed)
 
 keysPage.updateOutputState = function()
 {
-   clear();
+   //clear();
+
    this.canScrollUp = activeNoteMap.canScrollUp();
    this.canScrollDown = activeNoteMap.canScrollDown();
    this.canScrollLeft = activeNoteMap.canScrollLeft();
@@ -140,7 +141,6 @@ keysPage.scrollKey = function(offset)
 
 keysPage.onGridButton = function(row, column, pressed)
 {
-   println("keys onGridButton");
    
    var key = activeNoteMap.cellToKey(column, row);
 
@@ -149,11 +149,12 @@ keysPage.onGridButton = function(row, column, pressed)
       var velocity = 90;
 
       if (pressed)
-      {
+      {  println("note ON "+key);
+   
          cursorTrack.startNote(key, velocity);
       }
       else
-      {
+      {  println("note OFF "+key);
          cursorTrack.stopNote(key, velocity);
       }
    }

@@ -98,6 +98,8 @@ function setActivePage(page)
    }
    var isInit = activePage == null;
     
+   clear();
+
 
     
 
@@ -433,7 +435,7 @@ function init()
    }
 
 
-   cursorClip = host.createCursorClip(SEQ_BUFFER_STEPS, 128);
+   cursorClip = host.createCursorClip(SEQ_BUFFER_STEPS, 128); // change to createLauncherCursorClip
    cursorClip.addStepDataObserver(seqPage.onStepExists);
    cursorClip.addPlayingStepObserver(seqPage.onStepPlay);
    cursorClip.scrollToKey(0);
@@ -458,9 +460,11 @@ function polledFunction() {
   
   
   polledFunctionCounter = polledFunctionCounter  +1;
+  if (trace>3) {
    if ((polledFunctionCounter%10) == 0) {
       println("polling");
    }
+  }
    
  //println( "isRecording[0]="+isRecording[0] );
   timerState = timerState + 1;

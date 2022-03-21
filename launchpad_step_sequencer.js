@@ -258,7 +258,7 @@ seqPage.onGridButton = function(row, column, pressed)
 
          if (pressed)
          {
-            //cursorTrack.startNote(key, velocity);
+            cursorTrack.startNote(key, velocity);
 
             if (this.detailMode)
             {
@@ -271,7 +271,7 @@ seqPage.onGridButton = function(row, column, pressed)
          }
          else
          {
-            //cursorTrack.stopNote(key, velocity);
+            cursorTrack.stopNote(key, velocity);
          }
       }
    }
