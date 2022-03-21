@@ -287,12 +287,14 @@ function IsMixerButton(index) {
 function ViewShiftColour(index) {
    switch (index) {
       case 0:
-         return Colour.BLUE_GREEN_FULL;
+         return Colour.GREEN_FULL;
       case 1:
-         return Colour.BLUE;
+         return Colour.BLUE_GREEN_FULL;
       case 2:
-         return Colour.ORANGE;
+         return Colour.BLUE;
       case 3:
+         return Colour.ORANGE;
+      case 4:
          return Colour.FUCHSIA_FULL;
       default:
          return Colour.OFF;

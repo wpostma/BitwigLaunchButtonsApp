@@ -732,9 +732,13 @@ function onMidi(status, data1, data2)
               // VIEW
               
               view_shift = view_shift +1;
-              if(view_shift>3) {
+              if(view_shift>4) {
                  view_shift=0;
               }
+
+              gridPage.split = (view_shift>0);
+              clear();
+              
               showPopupNotification("KEYS PAGE "+(view_shift+1));
             }
             else

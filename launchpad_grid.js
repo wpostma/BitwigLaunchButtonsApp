@@ -367,8 +367,12 @@ var BASE_NOTES = [36,12,48,96];
 
 gridPage.doGridNoteOrCCButton = function(row,column,pressed)
 {
+	if (view_shift<1) {
+		return;
+	}
+
 	var rowInvert = 3 - (row-4);
-	var baseNoteNo = BASE_NOTES[view_shift];
+	var baseNoteNo = BASE_NOTES[view_shift-1];
 
 	if (pressed) {
 		gridPage.PressedRow = row;
@@ -436,7 +440,11 @@ gridPage.onGridButton = function(row, column, pressed)
     if (trace>0) {
 			 println("gridPage.onGridButton row "+row+" column "+column+" pressed "+pressed );
 	}
-
+	var maxrow = 8;
+	if (gridPage.split) {
+		maxrow = 4;
+	}
+	
 	if ((row < 4)||(!gridPage.split)) 
 	{
 		var track = column;
