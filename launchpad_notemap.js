@@ -5,9 +5,11 @@
  
  // Makes up all the Notemaps to be used within launchpad_keys.js
 
+ // To access lower registers we must map a scroll down function
+
 function NoteMap()
 {
-   this.rootKey = 12;
+   this.rootKey = 24; // drum kits in bitwig usually start at note 24
 }
 
 var ModernModesPush =
