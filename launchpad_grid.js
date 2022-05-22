@@ -79,27 +79,63 @@ gridPage.nextDevice = function()
 	cursorDevice.selectNext();
 };
 
-gridPage.CursorLeft = function(isPressed)
+gridPage.gridShiftPop = function()
+{
+	if (gridPage.grid_shift==0)
+		showPopupNotification('Grid HOME Position')
+	else 
+		showPopupNotification('Grid shift +'+gridPage.grid_shift);
+}
+gridPage.onDown = function(isPressed)
 {
 	if (isPressed) {
-		gridPage.grid_shift = gridPage.grid_shift - 2;
+		gridPage.grid_shift = gridPage.grid_shift + 1;
+		if (gridPage.grid_shift>8) {
+			gridPage.grid_shift =8;
+		}
+	
+	   gridPage.gridShiftPop();
+	}
+}
+
+gridPage.onUp = function(isPressed)
+{
+	if (isPressed) {
+		gridPage.grid_shift = gridPage.grid_shift - 1;
 		if (gridPage.grid_shift<0) {
-			gridPage.grid_shift = 4;
+			gridPage.grid_shift = 0;
 		}
 		
-		showPopupNotification('Grid +'+gridPage.grid_shift);;
+		gridPage.gridShiftPop();
 	}
+}
+
+gridPage.CursorLeft = function(isPressed)
+{
+	if (!IS_SHIFT_PRESSED) {
+  	   //isSetPressed ? previousMode() : 
+		 if (isPressed) {
+	        cursorTrack.selectPrevious();
+		 }
+	} 
+	else if (isPressed) {
+	   //TODO
+	}
+
 }
 
 
 gridPage.CursorRight = function(isPressed)
 {
+    if (!IS_SHIFT_PRESSED) {
+        //isSetPressed ? nextMode() : 
+		if (isPressed) {
+				cursorTrack.selectNext(); 
+		}      
+	}
+	else 
 	if (isPressed) {
-		gridPage.grid_shift = gridPage.grid_shift +2;
-		if (gridPage.grid_shift>4) {
-			gridPage.grid_shift =0;
-		}
-		showPopupNotification('Grid +'+gridPage.grid_shift);
+	   
 	}
 	
 }

@@ -25,3 +25,20 @@ Page.prototype.shouldKeyBeUsedForNoteInport = function(x,y)
 {
    return false;
 }
+
+
+Page.prototype.onDown = function(isPressed)
+{ 
+    println("onDown: not implemented");
+
+   return false;
+}
+
+
+Page.prototype.onUp = function(isPressed)
+{
+   println("onUp: not implemented");
+
+   return false;
+}
+

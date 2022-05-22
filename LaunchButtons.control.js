@@ -1,7 +1,85 @@
-// LaunchButtons  WP : 2022-03-18
+// LaunchButtons  WP : 2022-05-22
 //
-// Novation Launchpad script hacked up to work with BassApps.de/launchbuttons.
-
+// Novation Launchpad script hacked up to work with BassApps.de/launchbuttons. (Early Not very functional alpha v0.01)
+//
+// The plan is to get the following ideas working
+//
+// LAUNCHER
+//    - The killer feature of real novation launchpads, emulated and then enhanced by Launchapps.de app.
+//    - Full 8x8 grid with the main 8x8 grid of buttons launching scenes
+//    - Separate play and stop and record
+//    - Grid note buttons create and record clip when pressing empty clip
+//    - When you already have a clip and want to erase and re-record, shift then hit clip again.
+//    - When you simply want to erase a clip you hit shift (release) shift (release) then clip.
+//    - When you want to create an empty clip you simply press and HOLD for three seconds.
+//    - On squares that have a clip, pressing will play it, and again to stop it.
+//
+// SEQUENCER
+//   - Bottom of the main 8x8 grid shows notes
+//   - Top half shows one lane (midi note#) midi note events
+//  
+// KEYS
+//   - Play keyboards chromatically.
+//
+// TRACK/MIXERS/SENDS Mode (concept not even coded)
+//  - Grid becomes 8 track faders which can be put into main track gain fader mode, pan mode, send a,b,c,
+//    and into a mute/solo  buttons mode.
+//    
+//
+// 
+// Top Row Buttons
+//   1 UP, 2 DOWN,  3 Left 4 Right  -> mostly should be used to scroll around in some mode. 
+//                   Colours should indicate states.
+//                     In session mode (clip launcher) should let me move around the session grid
+//                     In modes with playable keys, up and down should change octave.
+//                     In sequencer mode left and right should let me change the sequencer grid note value (1/4, 1/8, 1/16)
+//
+//   5 SESSION     - go to clip launcher
+//   6 USER1(KEYS) - go to note mode
+//   7 USER2(SEQ)  - go to sequencer
+//   8 SHIFT      - Holding this should latch into a shift mode 1.  Shift mode 1 will change what session,note,custom do
+//                  and also when you press a grid button, what that does. 
+//                  You should be able to press it multiple times and change its color and that will 
+//                  make as many shift levels.  
+//                 Shift one shift, shift mode mode two, then cancel shift, I think is enough.
+//
+//  Top Row Functions with SHIFT pressed
+//    Up   - Increase Launch Quantization (1 bar clip quantize, 2 bar, 4 bar)
+//    Down - Decrease Launch Quantization (from 2 bar down to 1 bar etc)
+//    Left - Track Select Previous
+//    Right - Track Select Next
+//
+//  Right Side Buttons - First Column
+//    The icons on the right show play and these launch scenes.
+//    With shift pressed?
+//
+//  Right Side Buttons - Second Column
+//    No idea but will think of a cool use!
+//
+//  Right Side Buttons - Third Column
+//    These have labels printed in the launchapps.de app
+//    PLAY
+//    STOP
+//    RECORD (CIRCLE)
+//    PLUS  (no idea what it means)
+//    CIRCLE with a half circle (no idea what it means)
+//    A
+//    B
+//    FADER MODE (this is an app feature that this script can see fader values)
+//
+//  LEFT SIDE Buttons
+//    Different features per major mode.
+//       Seq/Keys mode - Velocity values
+//       Launcher mode - record quantize values
+//      
+// MAIN GRID
+//    In step mode it's a split.
+//    In launcher mode its a clip launcher or a split keys and clip launcher
+//    In seq mode it's a sequencer and key split.
+//  Untested Ideas: 
+//    Track Selection
+//       Last row of main grid would be nice to have a track select function? (Ruins my split launcher)
+//       Shift plus clip would select the instrument?
 
 var trace= 2; //  type trace=1 in the controller script console to enable most debug messages
 var view_shift=0; // 0,1,2,3,4 when cursor_down is pressed.
@@ -613,6 +691,69 @@ function RewindAndStopAllClips() {
    }
 
 }
+
+function PlayStop(isPressed)
+{
+   if (isPressed)
+   {  
+      if (IS_SHIFT_PRESSED && playing) {
+         println("shift+play: musical stop");
+         MUSICAL_STOP_STATE = 1;
+         MasterTrackVolume = getMasterVol();
+
+         return;
+      }
+      println("play="+playing);
+      if (playing != 0) 
+      {	
+         transport.stop();
+         showPopupNotification("Stop");
+         
+      }
+      else
+      {  
+         
+         if (IS_SHIFT_PRESSED) {
+            println("Rewind.");
+            transport.rewind();
+         };
+         showPopupNotification("Play");
+         transport.play();
+         masterTrack.mute().set(false);
+
+      }
+   }
+   else
+   {  if (MUSICAL_STOP_STATE>0) {
+         transport.stop();
+         RewindAndStopAllClips();
+         host.scheduleTask(clearMusicalStopState,  2000);
+      }
+   }
+}
+
+function ModeAdvance(isPressed)
+{
+   if (isPressed)
+   {  
+     // VIEW
+     
+     view_shift = view_shift +1;
+     if(view_shift>4) {
+        view_shift=0;
+     }
+
+     gridPage.split = (view_shift>0);
+     clear();
+     
+     showPopupNotification("KEYS PAGE "+(view_shift+1));
+   }
+   else
+   {
+      //view_shift=0;
+   }
+}
+
 // This is the main function which runs whenever a MIDI signal is sent
 // You can uncomment the printMIDI below to see the MIDI signals within Bitwigs Controller script console
 
@@ -644,7 +785,9 @@ function onMidi(status, data1, data2)
          //println("more transport stuff... "+data1)
          switch(data1) {
             case CCTransport.STOP:
-                  transport.stop();
+                  if (isPressed) { 
+                        transport.stop();
+                  }
                   showPopupNotification('Stop');
                   break;
             case CCTransport.RECORD:
@@ -689,102 +832,38 @@ function onMidi(status, data1, data2)
             }
             break;
          case TopButton.CURSOR_UP:
-            if (isPressed)
-            {  
-               if (IS_SHIFT_PRESSED && playing) {
-                  println("shift+play: musical stop");
-                  MUSICAL_STOP_STATE = 1;
-                  MasterTrackVolume = getMasterVol();
-
-                  return;
-               }
-               println("play="+playing);
-               if (playing != 0) 
-               {	
-                  transport.stop();
-                  showPopupNotification("Stop");
-                 
-               }
-               else
-               {  
-                  
-                  if (IS_SHIFT_PRESSED) {
-                     println("Rewind.");
-                     transport.rewind();
-                  };
-                  showPopupNotification("Play");
-                  transport.play();
-                  masterTrack.mute().set(false);
-
-               }
-            }
-            else
-            {  if (MUSICAL_STOP_STATE>0) {
-                  transport.stop();
-                  RewindAndStopAllClips();
-                  host.scheduleTask(clearMusicalStopState,  2000);
-               }
-            }
+            activePage.onUp(isPressed);
+            
             break;
          case TopButton.CURSOR_DOWN:
-            if (isPressed)
-            {  
-              // VIEW
-              
-              view_shift = view_shift +1;
-              if(view_shift>4) {
-                 view_shift=0;
-              }
-
-              gridPage.split = (view_shift>0);
-              clear();
-              
-              showPopupNotification("KEYS PAGE "+(view_shift+1));
-            }
-            else
-            {
-               //view_shift=0;
-            }
+             activePage.onDown(isPressed);
             break;
 
          case TopButton.CURSOR_LEFT:
-            if (IS_SHIFT_PRESSED) {
-               activePage.CursorLeft(isPressed);
-            }
-            else 
-            if (isPressed) {
-               isSetPressed ? previousMode() : cursorTrack.selectPrevious();
-            }
+            activePage.CursorLeft(isPressed);
             break;
 
          case TopButton.CURSOR_RIGHT:
-         
-            if (IS_SHIFT_PRESSED) {
-               activePage.CursorRight(isPressed);
-            }
-            else 
-            if (isPressed) {
-               isSetPressed ? nextMode() : cursorTrack.selectNext();
-            }
+            activePage.CursorRight(isPressed);
             break;
 	
          case TopButton.SESSION:
-            
-            isSetPressed  = isPressed;
-            if (isSetPressed)
-            { 
-               println("[META] Pressed");
-            } 
-            else
-            { 
-               println("[META] Release");
-            }
+            activePage.onSession(isPressed); 
+            // isSetPressed  = isPressed;
+            // if (isSetPressed)
+            // { 
+            //    println("[META] Pressed");
+            // } 
+            // else
+            // { 
+            //    println("[META] Release");
+            // }
 
             break;
 
          case TopButton.USER1:
            
-                println("user1");
+                println("USER1/MIX");
          
                 activePage.onUser1(isPressed);
                 if(IS_KEYS_PRESSED)
