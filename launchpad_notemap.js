@@ -7,7 +7,7 @@
 
 function NoteMap()
 {
-   this.rootKey = 36;
+   this.rootKey = 12;
 }
 
 var ModernModesPush =
